@@ -1,7 +1,10 @@
-use std::env;
+use std::{env, io::Write};
 
 mod commands;
+mod data;
+mod errors;
 
+use data::{init::init, functions::get_file};
 use serenity::{
     async_trait,
     model::prelude::{
@@ -19,10 +22,13 @@ struct Handler;
 impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         if let Interaction::ApplicationCommand(command) = interaction {
-            // println!("Received command interaction: {:?}", command);
-
             let content = match command.data.name.as_str() {
                 "ping" => commands::ping::run(&command.data.options),
+                "join" => commands::join::run(&command),
+                "leave" => commands::leave::run(&command.data.options),
+                "status" => commands::status::run(&command.data.options),
+                "list_wichtel" => commands::list_wichtel::run(&command.data.options),
+                "end_registration" => commands::end_registration::run(&command.data.options),
                 _ => "not implemented :(".to_string(),
             };
 
@@ -43,10 +49,37 @@ impl EventHandler for Handler {
     async fn ready(&self, ctx: Context, ready: Ready) {
         println!("{} is connected!", ready.user.name);
 
-        let _guild_command = Command::create_global_application_command(&ctx.http, |command| {
+        let _ping_command = Command::create_global_application_command(&ctx.http, |command| {
             commands::ping::register(command)
         })
         .await;
+
+        let _join_command = Command::create_global_application_command(&ctx.http, |command| {
+            commands::join::register(command)
+        })
+        .await;
+
+        let _leave_command = Command::create_global_application_command(&ctx.http, |command| {
+            commands::leave::register(command)
+        })
+        .await;
+
+        let _status_command = Command::create_global_application_command(&ctx.http, |command| {
+            commands::status::register(command)
+        })
+        .await;
+
+        let _list_wichtel_command =
+            Command::create_global_application_command(&ctx.http, |command| {
+                commands::list_wichtel::register(command)
+            })
+            .await;
+
+        let _end_registration_command =
+            Command::create_global_application_command(&ctx.http, |command| {
+                commands::end_registration::register(command)
+            })
+            .await;
     }
 }
 
@@ -55,6 +88,11 @@ async fn main() {
     dotenv::dotenv().ok();
 
     let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
+
+    match init() {
+        true => println!("Wichtel.txt created."),
+        false => println!("Wichtel.txt already exists."),
+    }
 
     let mut client = Client::builder(token, GatewayIntents::empty())
         .event_handler(Handler)
