@@ -1,10 +1,10 @@
-use std::{env, io::Write};
+use std::env;
 
 mod commands;
 mod data;
 mod errors;
 
-use data::{init::init, functions::get_file};
+use data::init::init;
 use serenity::{
     async_trait,
     model::prelude::{

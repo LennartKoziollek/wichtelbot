@@ -35,7 +35,12 @@ pub fn add_user(user_id: u64) -> bool {
     result
 }
 
-pub fn remove_user(user_id: u64) -> Result<bool, Error> {
+pub fn remove_user(user_id: u64) -> Result<(), Error> {
 
-    Ok(false)
+    let file = get_file();
+    if !contains_user(user_id).unwrap() {
+        // Here logic lol
+    }
+
+    Ok(())
 }
